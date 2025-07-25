@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
+import apiClient from "../config/axios";
 import { API_BASE_URL } from "../config/api";
 
 function BookDetail() {
@@ -66,12 +67,10 @@ function BookDetail() {
         setReviewSuccess('');
 
         try {
-            await axios.post(`${API_BASE_URL}/review`, {
+            await apiClient.post('/review', {
                 bookId: id,
                 rating: reviewData.rating,
                 review: reviewData.review
-            }, {
-                withCredentials: true
             });
 
             setReviewSuccess('Review added successfully!');

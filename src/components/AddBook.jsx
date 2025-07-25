@@ -1,7 +1,6 @@
 import { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { API_BASE_URL } from "../config/api";
+import apiClient from "../config/axios";
 
 function AddBook() {
   const [title, setTitle] = useState('');
@@ -19,12 +18,10 @@ function AddBook() {
     setSuccess('');
 
     try {
-      await axios.post(`${API_BASE_URL}/addBook`, {
+      await apiClient.post('/addBook', {
         title,
         author,
         genre
-      }, {
-        withCredentials: true // Important for sending cookies
       });
 
       setSuccess('Book added successfully!');

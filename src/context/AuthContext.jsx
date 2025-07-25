@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
+import apiClient from '../config/axios';
 import { API_BASE_URL } from '../config/api';
 
 const AuthContext = createContext();
@@ -16,15 +17,18 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState(null);
 
   // Check if user is logged in on app start
   useEffect(() => {
     const checkAuth = () => {
       const storedUser = localStorage.getItem('user');
+      const storedToken = localStorage.getItem('token');
       const isLoggedIn = localStorage.getItem('isLoggedIn');
-      
-      if (storedUser && isLoggedIn === 'true') {
+
+      if (storedUser && storedToken && isLoggedIn === 'true') {
         setUser(JSON.parse(storedUser));
+        setToken(storedToken);
         setIsAuthenticated(true);
       }
       setLoading(false);
@@ -45,15 +49,19 @@ export const AuthProvider = ({ children }) => {
 
       console.log('Login response:', response.data);
 
-      // Now backend returns user data
+      // Now backend returns user data and token
       const userData = response.data.user;
+      const authToken = response.data.token;
 
       setUser(userData);
+      setToken(authToken);
       setIsAuthenticated(true);
       localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('token', authToken);
       localStorage.setItem('isLoggedIn', 'true');
 
       console.log('Login successful, user data:', userData);
+      console.log('Token stored:', authToken ? 'YES' : 'NO');
       return { success: true, message: response.data.message };
     } catch (error) {
       console.error('Login error:', error);
@@ -86,15 +94,15 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await axios.post(`${API_BASE_URL}/logout`, {}, {
-        withCredentials: true
-      });
+      await apiClient.post('/logout');
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
       setUser(null);
+      setToken(null);
       setIsAuthenticated(false);
       localStorage.removeItem('user');
+      localStorage.removeItem('token');
       localStorage.removeItem('isLoggedIn');
     }
   };
@@ -103,6 +111,7 @@ export const AuthProvider = ({ children }) => {
     user,
     isAuthenticated,
     loading,
+    token,
     login,
     register,
     logout
